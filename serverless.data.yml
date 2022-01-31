@@ -1,0 +1,46 @@
+service: ocr-data
+
+provider:
+  name: aws
+  runtime: nodejs14.x
+  region: ${opt:region, 'us-east-1'}
+  stage: ${opt:stage, 'dev'}
+  deploymentBucket:
+    name: rijwan-dev-s3
+  environment:
+    DEPLOY_BUCKET: ${opt:stage, self:provider.stage}-ocr-api-bucket
+    UPLOAD_BUCKET: ${opt:stage, self:provider.stage}-ocr-upload-bucket
+
+resources:
+  Resources:
+    UploadBucket:
+      Type: AWS::S3::Bucket
+      Properties:
+        BucketName: ${self:provider.environment.UPLOAD_BUCKET}
+        AccessControl: Private
+        PublicAccessBlockConfiguration:
+          BlockPublicAcls: true
+          BlockPublicPolicy: true
+          IgnorePublicAcls: true
+          RestrictPublicBuckets: true
+    OCRBucket:
+      Type: AWS::S3::Bucket
+      Properties:
+        BucketName: ${self:provider.environment.DEPLOY_BUCKET}
+        AccessControl: Private
+        PublicAccessBlockConfiguration:
+          BlockPublicAcls: true
+          BlockPublicPolicy: true
+          IgnorePublicAcls: true
+          RestrictPublicBuckets: true
+        # CorsConfiguration:
+        #   CorsRules:
+        #     - AllowedMethods:
+        #         - GET
+        #         - PUT
+        #         - POST
+        #         - HEAD
+        #       AllowedOrigins:
+        #         - '*'
+        #       AllowedHeaders:
+        #         - '*'
