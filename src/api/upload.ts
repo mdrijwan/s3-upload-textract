@@ -1,29 +1,21 @@
-const AWS = require('aws-sdk')
-const s3 = new AWS.S3()
-const textract = new AWS.Textract()
-const textractHelper = require('aws-textract-helper')
+import * as textractHelper from 'aws-textract-helper'
+import { s3Upload, documentExtract, formatResponse } from '../helpers/common'
 
-const BUCKET_NAME = process.env.UPLOAD_BUCKET
+let response
 
-module.exports.handler = async (event) => {
-  const response = {
-    isBase64Encoded: false,
-    statusCode: 200,
-    body: JSON.stringify({ message: 'Successfully uploaded file to S3' }),
-  }
-
+export const handler = async (event) => {
   try {
     const parsedBody = JSON.parse(event.body)
     const base64File = parsedBody.file
     const decodedFile = Buffer.from(base64File.replace(/^data:image\/\w+;base64,/, ''), 'base64')
     const params = {
-      Bucket: BUCKET_NAME,
+      Bucket: process.env.UPLOAD_BUCKET,
       Key: `images/${new Date().toISOString()}.jpeg`,
       Body: decodedFile,
       ContentType: 'image/jpeg',
     }
 
-    const uploadResult = await s3.upload(params).promise()
+    const uploadResult = await s3Upload(params)
     console.log('UPLOAD RESULT', uploadResult)
     const textractData = await documentExtract(uploadResult.Key)
     // console.log('TEXT DATA', textractData)
@@ -46,40 +38,18 @@ module.exports.handler = async (event) => {
       taxValue: formData['First Registration Taxable Value'].trimEnd(),
       chassis: formData[''].trimEnd(),
     }
-    // console.log('EXTRACT DATA', JSON.stringify(extractedData))
+    console.log('EXTRACT DATA', JSON.stringify(extractedData))
 
-    response.body = JSON.stringify({
+    response = {
       message: 'Successfully uploaded file to S3',
       uploadResult,
       extractedData,
-    })
-  } catch (e) {
-    console.error(e)
-    response.body = JSON.stringify({ message: 'File failed to upload', errorMessage: e })
-    response.statusCode = 500
+    }
+
+    return formatResponse(200, response)
+  } catch (error) {
+    console.error(error)
+
+    return formatResponse(400, error.message)
   }
-
-  async function documentExtract(key) {
-    return new Promise((resolve) => {
-      const params = {
-        Document: {
-          S3Object: {
-            Bucket: BUCKET_NAME,
-            Name: key,
-          },
-        },
-        FeatureTypes: ['FORMS'],
-      }
-
-      textract.analyzeDocument(params, (err, data) => {
-        if (err) {
-          return resolve(err)
-        } else {
-          resolve(data)
-        }
-      })
-    })
-  }
-
-  return response
 }
