@@ -1,0 +1,59 @@
+service: ocr-api
+
+provider:
+  name: aws
+  runtime: nodejs14.x
+  region: ${opt:region, 'us-east-1'}
+  stage: ${opt:stage, 'dev'}
+  deploymentBucket:
+    name: ${self:provider.environment.DEPLOY_BUCKET}
+  environment:
+    DEPLOY_BUCKET: ${opt:stage, self:provider.stage}-ocr-api-bucket
+    UPLOAD_BUCKET: ${opt:stage, self:provider.stage}-ocr-upload-bucket
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - s3:*
+      Resource: arn:aws:s3:::${self:provider.environment.UPLOAD_BUCKET}/*
+    - Effect: Allow
+      Action:
+        - textract:*
+      Resource: '*'
+
+custom:
+  fileUploadBucketName: $${self:provider.stage}-bucket-${self:service}
+
+plugins:
+  # - serverless-iam-roles-per-function
+  - serverless-offline
+
+functions:
+  s3FileUploader:
+    handler: src/upload.handler
+    name: s3-file-uploader
+    description: A lambda handler that uploads image file to an S3 bucket and extract data using textract.
+    timeout: 60 # seconds
+    memorySize: 128 # mb
+    events:
+      - http:
+          path: upload
+          method: POST
+          cors: true
+          request:
+            schema:
+              application/json: ${file(./src/validator/s3.json)}
+    # iamRoleStatements:
+    #   - Effect: Allow
+    #     Action:
+    #       - "s3:Put*"
+    #       - "textract:AnalyzeDocument"
+    #     Resource: arn:aws:s3:::${self:custom.fileUploadBucketName}/*
+    # environment:
+    #   UPLOAD_BUCKET: ${self:provider.environment.UPLOAD_BUCKET}
+# resources:
+#   Resources:
+#     UploadBucket:
+#       Type: AWS::S3::Bucket
+#       Properties:
+#         BucketName: ${self:provider.environment.UPLOAD_BUCKET}
+#         AccessControl: Private
