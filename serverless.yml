@@ -25,11 +25,12 @@ custom:
 
 plugins:
   # - serverless-iam-roles-per-function
+  - serverless-plugin-typescript
   - serverless-offline
 
 functions:
   s3FileUploader:
-    handler: src/upload.handler
+    handler: src/api/upload.handler
     name: s3-file-uploader
     description: A lambda handler that uploads image file to an S3 bucket and extract data using textract.
     timeout: 60 # seconds
@@ -41,7 +42,7 @@ functions:
           cors: true
           request:
             schema:
-              application/json: ${file(./src/validator/s3.json)}
+              application/json: ${file(./src/validator/s3upload.json)}
     # iamRoleStatements:
     #   - Effect: Allow
     #     Action:
