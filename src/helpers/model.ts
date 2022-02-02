@@ -9,6 +9,7 @@ export interface documentDataModel {
   color: string
   bodyType: string
   registrationNo: string
+  seatingCapacity: string
 }
 
 export interface extractedDataModel {
@@ -32,15 +33,71 @@ export interface s3ParamsModel {
 }
 
 export interface textractParamsModel {
-  Document: textract
+  Document: textractDocModel
   FeatureTypes: string[]
 }
 
-interface textract {
-  S3Object: s3Bucket
+interface textractDocModel {
+  S3Object: s3BucketModel
 }
 
-interface s3Bucket {
+interface s3BucketModel {
   Bucket: string
   Name: string
 }
+
+export const staticLabelModel = [
+  'Document',
+  'Mark',
+  'Manufacture',
+  'Country',
+  'Model',
+  'Seating',
+  'Chassis',
+  'Passenger',
+  'Standing',
+  'Engine',
+  'First',
+  'Cylinder',
+  'Capacity',
+  'Rated',
+  'Power',
+  'Taxable',
+  'Value',
+  'Registration',
+  'Type',
+  'Tax-exempt',
+  'Accessories',
+  'Tax',
+  'Approval',
+  'No',
+  'Unexpired',
+  'Portion',
+  'Warranty',
+  'Vehicle',
+  'Length',
+  'Number',
+  'Previous',
+  'Owner',
+  'Width',
+  'Date',
+  'Height',
+  'Gross',
+  'Conditions',
+  'Licence',
+  'Axle',
+  'Combined',
+  'Weight',
+  'REMARKS',
+  'Luggage',
+  'REGISTERED',
+  'Signature',
+  'Name',
+  'Colour',
+  'Of',
+  'Hong Kong',
+  'Special',
+  'Administrative',
+  'Region',
+  'Class',
+]
