@@ -1,27 +1,30 @@
 const AWS = require('aws-sdk')
+const textractHelper = require('aws-textract-helper')
+const multipart = require('aws-lambda-multipart-parser')
 const s3 = new AWS.S3()
 const textract = new AWS.Textract()
-const textractHelper = require('aws-textract-helper')
-
 const BUCKET_NAME = process.env.UPLOAD_BUCKET
 
 module.exports.handler = async (event) => {
   const response = {
-    isBase64Encoded: false,
     statusCode: 200,
-    body: JSON.stringify({ message: 'Successfully uploaded file to S3' }),
+    headers: {
+      'Access-Control-Allow-Origin': '*',
+    },
   }
 
   try {
-    const parsedBody = JSON.parse(event.body)
-    const base64File = parsedBody.file
-    const decodedFile = Buffer.from(base64File.replace(/^data:image\/\w+;base64,/, ''), 'base64')
+    const result = await multipart.parse(event, false)
+    console.log('result', result)
+    const file = result.file
+    const fileName = new Date().toISOString().replace('.', '-')
     const params = {
       Bucket: BUCKET_NAME,
-      Key: `images/${new Date().toISOString()}.jpeg`,
-      Body: decodedFile,
-      ContentType: 'image/jpeg',
+      Key: `images/${fileName}-${file.filename}`,
+      Body: file.content,
+      ContentType: file.contentType,
     }
+    console.log('params', params)
 
     const uploadResult = await s3.upload(params).promise()
     console.log('UPLOAD RESULT', uploadResult)
@@ -30,9 +33,6 @@ module.exports.handler = async (event) => {
 
     const formData = textractHelper.createForm(textractData, { trimChars: [':', ' '] })
     console.log('FORM DATA', JSON.stringify(formData))
-    // function trim (data) {
-    //     return data.replace(/(^\s+|\s+$)/g, '')
-    // }
 
     const extractedData = {
       transacation: formData.Transaction.trimEnd(),
@@ -46,7 +46,7 @@ module.exports.handler = async (event) => {
       taxValue: formData['First Registration Taxable Value'].trimEnd(),
       chassis: formData[''].trimEnd(),
     }
-    // console.log('EXTRACT DATA', JSON.stringify(extractedData))
+    console.log('EXTRACT DATA', JSON.stringify(extractedData))
 
     response.body = JSON.stringify({
       message: 'Successfully uploaded file to S3',
