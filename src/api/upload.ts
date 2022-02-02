@@ -23,7 +23,7 @@ export const handler = async (event) => {
     }
 
     const uploadResult = await s3Upload(params)
-    console.log('UPLOAD RESULT', uploadResult)
+    // console.log('UPLOAD RESULT', uploadResult)
     const textractData = await analyzeProcess(uploadResult.Key)
     // console.log('TEXT DATA', textractData)
 
