@@ -8,20 +8,19 @@ export function constructData(
   value1: string,
   value2: string
 ) {
-  console.log('DATA', data)
   let fieldName
   const fieldIndex = _.findIndex(
     data,
     (r) => r.toString().toLowerCase() == value1 || r.toString().toLowerCase().indexOf(value2) != -1
   )
-  console.log('Index', fieldIndex)
+  // console.log('Index', fieldIndex)
 
   if (fieldIndex != -1) {
     const nearestIndexs = getNearestLabelIndex(data, fieldIndex)
-    console.log('index min, max', nearestIndexs[0], nearestIndexs[1])
+    // console.log('Index min, max', nearestIndexs[0], nearestIndexs[1])
 
     for (let i = nearestIndexs[0]; i <= nearestIndexs[1]; i++) {
-      console.log('fieldData', data[i])
+      // console.log('fieldData', data[i])
       if (numberCheck) {
         if (
           data[i].length > indexLength &&
@@ -30,7 +29,6 @@ export function constructData(
           !hasSpecialString(data[i])
         ) {
           fieldName = data[i]
-          console.log('fieldName', fieldName)
 
           break
         }
@@ -40,12 +38,12 @@ export function constructData(
         !isStaticLabel(data[i])
       ) {
         fieldName = data[i]
-        console.log('fieldName', fieldName)
 
         break
       }
     }
   }
+  // console.log('fieldName', fieldName)
 
   return fieldName
 }

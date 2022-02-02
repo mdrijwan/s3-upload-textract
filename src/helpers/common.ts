@@ -15,6 +15,10 @@ export const formatResponse = (statusCode: number, response) => {
 }
 
 export const trimData = async function (data) {
+  const lowerCase = _.transform(data, function (result, val, key) {
+    result[key] = val.toLocaleLowerCase()
+  })
+  console.log(lowerCase)
   return data.replace(/(^\s+|\s+$)/g, '')
 }
 
@@ -64,7 +68,7 @@ export const extractProcess = async function (formData) {
     taxValue: formData['First Registration Taxable Value'].trimEnd(),
     chassis: formData[''].trimEnd(),
   }
-  console.log('extractedData', extractedData)
+  console.log('analyzeDocument Data', extractedData)
 
   return extractedData
 }
@@ -89,8 +93,8 @@ export const detectProcess = async (key) => {
       const filterString = _.filter(mapText, (r) => !isSpecialString(r))
 
       detectData = await extractData(filterString)
-      console.log('detectData', detectData)
     }
+    console.log('detectDocument Data', detectData)
 
     return detectData
   } catch (err) {
@@ -99,7 +103,7 @@ export const detectProcess = async (key) => {
 }
 
 async function extractData(data) {
-  console.log('DATA', data)
+  console.log('filterString Data', data)
   const yearOfManufacture = constructData(data, 2, true, 'manufacture', 'year')
   const engineNo = constructData(data, 5, true, 'engine no', 'engine')
   const model = constructData(data, 4, true, 'model', 'model')
