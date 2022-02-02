@@ -24,6 +24,7 @@ export const handler = async (event) => {
 
     const uploadResult = await s3Upload(params)
     // console.log('UPLOAD RESULT', uploadResult)
+
     const textractData = await analyzeProcess(uploadResult.Key)
     // console.log('TEXT DATA', textractData)
 
@@ -31,16 +32,38 @@ export const handler = async (event) => {
     // console.log('FORM DATA', JSON.stringify(formData))
 
     const extractedData: extractedDataModel = await extractProcess(formData)
-    // console.log('EXTRACT DATA', extractedData)
+    // console.log('EXTRACTED DATA', extractedData)
 
-    const testData: documentDataModel = await detectProcess(uploadResult.Key)
-    // console.log('TEST DATA', testData)
+    const analyzedData: documentDataModel = await detectProcess(uploadResult.Key)
+    // console.log('ANALYZED DATA', analyzedData)
+
+    const unifiedData = {
+      make: analyzedData.make,
+      model: extractedData.model,
+      carRegistrationNumber: analyzedData.registrationNo,
+      yearOfManufacture: extractedData.manufactureYear,
+      bodyType: analyzedData.bodyType.toLocaleLowerCase(),
+      numberOfSeats: analyzedData.seatingCapacity,
+      engineCapacity: analyzedData.cylinderCapacity,
+      chasisNumber: extractedData.chassis,
+      engineNumber: analyzedData.engineNo,
+      color: analyzedData.color.toLocaleLowerCase(),
+      class: extractedData.class.toLocaleLowerCase(),
+      transactionNumber: extractedData.transacation,
+      dateOfIssue: extractedData.issueDate,
+      dateOfRegistration: extractedData.registrationDate,
+      taxValue: extractedData.taxValue,
+      taxExemptWarranty: extractedData.taxExemptWarranty,
+    }
 
     response = {
-      message: 'Successfully uploaded file to S3',
-      uploadResult,
-      extractedData,
-      testData,
+      s3Data: {
+        message: 'Successfully uploaded file to S3',
+        buecketName: uploadResult.Bucket,
+        key: uploadResult.Key,
+        url: uploadResult.Location,
+      },
+      userData: unifiedData,
     }
 
     return formatResponse(200, response)
