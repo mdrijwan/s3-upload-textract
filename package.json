@@ -34,6 +34,7 @@
     "typescript": "^4.5.5"
   },
   "dependencies": {
-    "aws-textract-helper": "^1.0.0-beta.5"
+    "aws-textract-helper": "^1.0.0-beta.5",
+    "lodash": "^4.17.21"
   }
 }
