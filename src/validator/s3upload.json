@@ -1,0 +1,21 @@
+{
+   "$schema":"http://json-schema.org/draft-04/schema#",
+   "additionalProperties":false,
+   "type":"object",
+   "title":"S3 Upload Schema",
+   "definitions":{
+      "non-empty-string":{
+         "minLength":1,
+         "type":"string"
+      }
+   },
+   "required":[
+      "file"
+   ],
+   "properties":{
+      "file":{
+         "type":"string",
+         "$ref":"#/definitions/non-empty-string"
+      }
+   }
+}

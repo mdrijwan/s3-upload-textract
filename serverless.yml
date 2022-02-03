@@ -5,6 +5,9 @@ provider:
   runtime: nodejs14.x
   region: ${opt:region, 'us-east-1'}
   stage: ${opt:stage, 'dev'}
+  apiGateway:
+    binaryMediaTypes:
+      - multipart/form-data
   deploymentBucket:
     name: ${self:provider.environment.DEPLOY_BUCKET}
   environment:
@@ -25,11 +28,12 @@ custom:
 
 plugins:
   # - serverless-iam-roles-per-function
+  - serverless-plugin-typescript
   - serverless-offline
 
 functions:
   s3FileUploader:
-    handler: src/upload.handler
+    handler: src/api/upload.handler
     name: s3-file-uploader
     description: A lambda handler that uploads image file to an S3 bucket and extract data using textract.
     timeout: 60 # seconds
@@ -39,21 +43,30 @@ functions:
           path: upload
           method: POST
           cors: true
+          binaryMediaTypes:
+            - '*/*'
           request:
             schema:
-              application/json: ${file(./src/validator/s3.json)}
-    # iamRoleStatements:
-    #   - Effect: Allow
-    #     Action:
-    #       - "s3:Put*"
-    #       - "textract:AnalyzeDocument"
-    #     Resource: arn:aws:s3:::${self:custom.fileUploadBucketName}/*
-    # environment:
-    #   UPLOAD_BUCKET: ${self:provider.environment.UPLOAD_BUCKET}
+              application/json: ${file(./src/validator/s3upload.json)}
+              name: s3UploadModel
+              description: 'Validation model for Uploading Image'
 # resources:
 #   Resources:
-#     UploadBucket:
-#       Type: AWS::S3::Bucket
+#     S3UploadGW:
+#       Type: AWS::ApiGateway::RestApi
 #       Properties:
-#         BucketName: ${self:provider.environment.UPLOAD_BUCKET}
-#         AccessControl: Private
+#         Name: s3-ocr-api
+#   Outputs:
+#     apiGatewayRestApiId:
+#       Value:
+#         Ref: S3UploadGW
+#       Export:
+#         Name: MyApiGateway-restApiId
+
+#     apiGatewayRestApiRootResourceId:
+#       Value:
+#         Fn::GetAtt:
+#           - S3UploadGW
+#           - RootResourceId
+#       Export:
+#         Name: MyApiGateway-rootResourceId
