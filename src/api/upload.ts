@@ -6,21 +6,22 @@ import {
   extractProcess,
 } from '../helpers/common'
 import { documentDataModel, extractedDataModel, s3ParamsModel } from '../helpers/model'
-import * as textractHelper from 'aws-textract-helper'
+import { createForm } from 'aws-textract-helper'
+import parser from 'lambda-multipart-parser'
 
 let response
 
 export const handler = async (event) => {
   try {
-    const parsedBody = JSON.parse(event.body)
-    const base64File = parsedBody.file
-    const decodedFile = Buffer.from(base64File.replace(/^data:image\/\w+;base64,/, ''), 'base64')
+    const result = await parser.parse(event)
+    const file = result.files[0]
     const params: s3ParamsModel = {
       Bucket: process.env.UPLOAD_BUCKET,
-      Key: `images/${new Date().toISOString()}.jpeg`,
-      Body: decodedFile,
-      ContentType: 'image/jpeg',
+      Key: `images/${new Date().toISOString().replace('.', '-')}-${file.filename}`,
+      Body: file.content,
+      ContentType: file.contentType,
     }
+    // console.log('PARAMS', params)
 
     const uploadResult = await s3Upload(params)
     // console.log('UPLOAD RESULT', uploadResult)
@@ -28,7 +29,7 @@ export const handler = async (event) => {
     const textractData = await analyzeProcess(uploadResult.Key)
     // console.log('TEXT DATA', textractData)
 
-    const formData = textractHelper.createForm(textractData, { trimChars: [':', ' '] })
+    const formData = createForm(textractData, { trimChars: [':', ' '] })
     // console.log('FORM DATA', JSON.stringify(formData))
 
     const extractedData: extractedDataModel = await extractProcess(formData)

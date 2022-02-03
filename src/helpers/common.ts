@@ -9,7 +9,9 @@ const textract = new Textract()
 export const formatResponse = (statusCode: number, response) => {
   return {
     statusCode,
-    headers: { 'Content-Type': 'application/json' },
+    headers: {
+      'Access-Control-Allow-Origin': '*',
+    },
     body: JSON.stringify(response, null, '\t'),
   }
 }
@@ -29,6 +31,8 @@ export const s3Upload = async function (params) {
     return result
   } catch (error) {
     console.log('Error', error)
+
+    return error
   }
 }
 
