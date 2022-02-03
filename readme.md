@@ -10,5 +10,3 @@ This is a a TypeScript powered REST API backend service to upload image to S3 an
 - framewrok: serverless
 - authorName: Md Rijwan Razzaq Matin
 - authorLink: 'https://github.com/mdrijwan'
-
-Thank you!
